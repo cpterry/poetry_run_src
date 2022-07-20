@@ -21,11 +21,24 @@ def main():
     print("\nFinished.")
 
 
-def run_example_a():
+def assert_success(args):
+    """Runs it twice to show stdout, stderr clearly.
+    """
+    subprocess.run(args)
+    assert "success" in str(subprocess.run(args, capture_output=True).stdout)
 
+
+def assert_failure(args):
+    """Runs it twice to show stdout, stderr clearly.
+    """
+    subprocess.run(args)
+    assert not "success" in str(subprocess.run(args, capture_output=True).stdout)
+
+
+def run_example_a():
     print("\n\nExample A does not use the source layout. `poetry run` just works.")
     os.chdir(start_dir / "example_a")
-    subprocess.run(["poetry", "run", "example_a"])
+    assert_success(["poetry", "run", "example_a"])
 
 
 def run_example_b():
@@ -35,14 +48,16 @@ def run_example_b():
     os.chdir(start_dir)
     uninstall("example_b")
     os.chdir(start_dir / "example_b")
-    print("`poetry run` does not work")
-    subprocess.run(["poetry", "run", "example_b"])
+    print("\n`poetry run` does not work")
+    assert_failure(["poetry", "run", "example_b"])
     subprocess.run(["poetry", "install"])
-    print("It will work after you run `poetry install`")
-    subprocess.run(["poetry", "run", "example_b"])
-    print("Since it's installed, it can also be run in other directories and directly")
+    print("\nIt will work after you run `poetry install`")
+    assert_success(["poetry", "run", "example_b"])
+    print(
+        "\nSince it's installed, it can also be run in other directories and directly"
+    )
     os.chdir(start_dir)
-    subprocess.run(["example_b.cmd"])
+    assert_success(["example_b.cmd"])
     uninstall("example_b")
 
 
@@ -54,13 +69,13 @@ def run_example_c():
     uninstall("example_c")
     os.chdir(start_dir / "example_c")
     print(
-        "`poetry run` works but maybe it shouldn't. It's a pitfall to think it's right and distribute an incorrect whl."
+        "\n`poetry run` works but maybe it shouldn't. It's a pitfall to think it's right and distribute an incorrect whl."
     )
-    subprocess.run(["poetry", "run", "example_c"])
+    assert_success(["poetry", "run", "example_c"])
     subprocess.run(["poetry", "install"])
-    print("Running `poetry install` and then calling it directly fails.")
+    print("\nRunning `poetry install` and then calling it directly fails.")
     os.chdir(start_dir)
-    subprocess.run(["example_c.cmd"])
+    assert_failure(["example_c.cmd"])
     os.chdir(start_dir)
     uninstall("example_c")
 
